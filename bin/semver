@@ -1,0 +1,160 @@
+#!/usr/bin/env ruby
+
+class SemVer
+
+  FILE_NAME = '.semver'
+
+  def SemVer.find dir=nil
+    dir ||= Dir.pwd
+    raise "#{dir} is not a directory" unless File.directory? dir
+
+    path = FILE_NAME
+
+    Dir.chdir dir do
+
+      loop do
+
+        if Dir[FILE_NAME].empty?
+          path = File.join '..', path
+          next
+        else
+          path = File.expand_path path
+          break
+        end
+
+      end
+
+    end
+
+    SemVer.new path
+  end
+
+  class << self
+
+    def attr_writer_pattern pattern, symbol
+
+      define_method("#{symbol}=".to_sym) do |str|
+
+        if str =~ pattern || str.empty?
+          instance_variable_set "@#{symbol}".to_sym, str
+        else
+          raise "#{symbol}: #{str} does not match pattern #{pattern}"
+        end
+
+      end
+
+    end
+
+  end
+
+  attr_writer_pattern /\d+/, :major
+  attr_writer_pattern /\d+/, :minor
+  attr_writer_pattern /\d+/, :patch
+  attr_writer_pattern /[A-Za-z][0-9A-Za-z-]+/, :special
+  attr_reader :major, :minor, :patch, :special
+
+  def initialize location
+    @location = location
+    load
+  end
+
+  def load
+    hash = open(@location) { |io| YAML::load io.read } || {}
+    self.major = hash[:major] || '0'
+    self.minor = hash[:minor] || '0'
+    self.patch = hash[:patch] || '0'
+    self.special = hash[:special] || ''
+  end
+
+  def save
+
+    hash = {
+      :major => @major,
+      :minor => @minor,
+      :patch => @patch,
+      :special => @special
+    }
+
+    yaml = YAML::dump hash
+    open(@location, 'w') { |io| io.write yaml }
+  end
+
+  def format fmt
+    fmt.gsub! '%M', @major
+    fmt.gsub! '%m', @minor
+    fmt.gsub! '%p', @patch
+    fmt.gsub! '%s', @special
+    fmt
+  end
+
+end
+
+if $0 == __FILE__
+
+  begin
+    command = ARGV.shift or raise "no command given"
+
+    case command
+    when /^init(ialize)?$/
+      FileUtils.touch SemVer::FILE_NAME
+      version = SemVer.find
+      version
+      version.save
+
+    when /^inc(rement)?$/
+      version = SemVer::find
+      dimension = ARGV.shift or raise "required: major | minor | patch"
+
+      case dimension
+      when 'major' then version.major.next!
+      when 'minor' then version.minor.next!
+      when 'patch' then version.patch.next!
+      else raise "#{dimension} is invalid: major | minor | patch"
+      end
+
+      version.special = ''
+
+      version.save
+
+    when /^spe(cial)?$/
+      version = SemVer::find
+      special_str = ARGV.shift or raise "required: an arbitrary string (beta, alfa, romeo, etc)"
+      raise "special must be " unless 
+      version.special = special_str
+      version.save
+
+    when 'format'
+      version = SemVer::find
+      format_str = ARGV.shift or raise "required: format string"
+      version.format format_str
+
+    when 'tag'
+      version = SemVer::find
+      puts version.format "v%M.%m.%p%s"
+
+    when 'help'
+      puts <<-HELP
+semver commands
+---------------
+
+init[ialze]                        # initialize semantic version tracking
+inc[rement] major | minor | patch  # increment a specific version number
+spe[cial] [STRING]                 # set a special version suffix
+format                             # printf like format: %M, %m, %p, %s
+tag                                # equivalenti to format 'v%M.%m.%p%s'
+help
+
+PLEASE READ http://semver.org 
+      HELP
+
+    else raise "invalid command #{command}"
+    end
+
+  rescue => e
+    puts e.message
+    puts e.backtrace
+    puts "#{$0} help for more info"
+    exit 1
+  end
+
+end
