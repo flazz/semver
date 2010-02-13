@@ -4,7 +4,7 @@ Gem::Specification.new do |spec|
   spec.name = "semver"
   spec.version = SemVer.find.format '%M.%m.%p'
   spec.summary = "Semantic Versioning"
-  spec.description = "maintain versions as per http://semver.rog"
+  spec.description = "maintain versions as per http://semver.org"
   spec.email = "flazzarino@gmail.com"
   spec.authors = ["Francesco Lazzarino"]
   spec.homepage = 'http://github.com/flazz/semver'
