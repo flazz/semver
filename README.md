@@ -18,11 +18,15 @@ use it
 quickstart for ruby
 -------------------
     require 'semver'
-    v = SemVer.find             
+    v = SemVer.find
     v.major                     # => "0"
     v.major.next!
     v.major                     # => "1"
     v.format "%M.%m.%p"         # => "1.1.0"
     v.save
+
+git integration
+---------------
+    % git config --global alias.semtag '!git tag -a $(semver tag) -m "tagging $(semver tag)"'
 
 [Franco Lazzarino](mailto:flazzarino@gmail.com)
