@@ -1,9 +1,11 @@
+class NoSemVerError < StandardError; end
+
 class SemVer
 
   FILE_NAME = '.semver'
 
   def SemVer.find dir=nil
-    v = SemVer.new 
+    v = SemVer.new
     v.load
     v
   end
@@ -17,8 +19,9 @@ class SemVer
 
       loop do
 
-        if Dir[FILE_NAME].empty?
-          return nil if File.expand_path(path) == '/'
+        if File.dirname(File.expand_path(path)) == '/'
+          raise NoSemVerError, "#{dir} is not semantic versioned"
+        elsif Dir[FILE_NAME].empty?
           path = File.join '..', path
           next
         else
