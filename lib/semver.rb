@@ -1,3 +1,5 @@
+require 'yaml'
+
 class NoSemVerError < StandardError; end
 
 class SemVer
