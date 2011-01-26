@@ -20,9 +20,10 @@ quickstart for ruby
     require 'semver'
     v = SemVer.find
     v.major                     # => "0"
-    v.major.next!
+    v.major += 1
     v.major                     # => "1"
     v.format "%M.%m.%p"         # => "1.1.0"
+    v.to_s                      # => "v1.1.0"
     v.save
 
 git integration

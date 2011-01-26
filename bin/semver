@@ -6,24 +6,38 @@ require 'semver'
 class CommandError < StandardError; end
 
 begin
-  command = ARGV.shift or raise CommandError, "no command given"
+  command = ARGV.shift || 'tag'
 
   case command
   when /^init(ialize)?$/
-    FileUtils.touch SemVer::FILE_NAME
-    version = SemVer.find
-    version
-    version.save
+    file = SemVer::FILE_NAME
+
+    if File.exist? file
+      puts "#{file} already exists"
+    else
+      version = SemVer.new
+      version.save file
+    end
 
   when /^inc(rement)?$/
     version = SemVer.find
     dimension = ARGV.shift or raise CommandError, "required: major | minor | patch"
 
     case dimension
-    when 'major' then version.major.next!
-    when 'minor' then version.minor.next!
-    when 'patch' then version.patch.next!
-    else raise CommandError, "#{dimension} is invalid: major | minor | patch"
+    when 'major'
+      version.major += 1
+      version.minor = 0
+      version.patch = 0
+
+    when 'minor'
+      version.minor += 1
+      version.patch = 0
+
+    when 'patch'
+      version.patch += 1
+
+    else
+      raise CommandError, "#{dimension} is invalid: major | minor | patch"
     end
 
     version.special = ''
@@ -42,7 +56,7 @@ begin
 
   when 'tag'
     version = SemVer.find
-    puts version.format "v%M.%m.%p%s"
+    puts version.to_s
 
   when 'help'
     puts <<-HELP
@@ -62,7 +76,7 @@ PLEASE READ http://semver.org
   else raise CommandError, "invalid command #{command}"
   end
 
-rescue CommandError, NoSemVerError => e
+rescue CommandError => e
   puts e.message
   puts "#{$0} help for more info"
   exit 1

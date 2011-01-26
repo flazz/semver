@@ -1,14 +1,16 @@
 require 'yaml'
-
-class NoSemVerError < StandardError; end
+require 'ruby-debug'
+require 'ruby-debug'
 
 class SemVer
 
   FILE_NAME = '.semver'
+  TAG_FORMAT = 'v%M.%m.%p%s'
 
   def SemVer.find dir=nil
     v = SemVer.new
-    v.load
+    f = SemVer.find_file dir
+    v.load f
     v
   end
 
@@ -20,59 +22,47 @@ class SemVer
     Dir.chdir dir do
 
       loop do
+        raise "#{dir} is not semantic versioned" if File.dirname(path) == '/'
 
-        if File.dirname(File.expand_path(path)) == '/'
-          raise NoSemVerError, "#{dir} is not semantic versioned"
-        elsif Dir[FILE_NAME].empty?
+        if Dir[path].empty?
           path = File.join '..', path
+          path = File.expand_path path
           next
         else
-          path = File.expand_path path
           return path
         end
 
       end
 
     end
+
   end
 
-  class << self
+  attr_accessor :major, :minor, :patch, :special
 
-    def attr_writer_pattern pattern, symbol
+  def initialize major=0, minor=0, patch=0, special=''
+    major.kind_of? Integer or raise "invalid major: #{major}"
+    minor.kind_of? Integer or raise "invalid minor: #{minor}"
+    patch.kind_of? Integer or raise "invalid patch: #{patch}"
 
-      define_method("#{symbol}=".to_sym) do |str|
-
-        if str =~ pattern || str.empty?
-          instance_variable_set "@#{symbol}".to_sym, str
-        else
-          raise "#{symbol}: #{str} does not match pattern #{pattern}"
-        end
-
-      end
-
+    unless special.empty?
+      special =~ /[A-Za-z][0-9A-Za-z-]+/ or raise "invalid special: #{special}"
     end
 
+    @major, @minor, @patch, @special = major, minor, patch, special
   end
 
-  attr_writer_pattern /\d+/, :major
-  attr_writer_pattern /\d+/, :minor
-  attr_writer_pattern /\d+/, :patch
-  attr_writer_pattern /[A-Za-z][0-9A-Za-z-]+/, :special
-  attr_reader :major, :minor, :patch, :special
-
-  def initialize major='0', minor='0', patch='0', special=''
-    self.major, self.minor, self.patch, self.special = major.to_s, minor.to_s, patch.to_s, special.to_s
+  def load file
+    @file = file
+    hash = YAML.load_file(file) || {}
+    @major = hash[:major] or raise "invalid semver file: #{file}"
+    @minor = hash[:minor] or raise "invalid semver file: #{file}"
+    @patch = hash[:patch] or raise "invalid semver file: #{file}"
+    @special = hash[:special]  or raise "invalid semver file: #{file}"
   end
 
-  def load file=SemVer.find_file
-    hash = open(file) { |io| YAML::load io.read } || {}
-    self.major = hash[:major] || '0'
-    self.minor = hash[:minor] || '0'
-    self.patch = hash[:patch] || '0'
-    self.special = hash[:special] || ''
-  end
-
-  def save file=SemVer.find_file
+  def save file=nil
+    file ||= @file
 
     hash = {
       :major => @major,
@@ -81,16 +71,20 @@ class SemVer
       :special => @special
     }
 
-    yaml = YAML::dump hash
+    yaml = YAML.dump hash
     open(file, 'w') { |io| io.write yaml }
   end
 
   def format fmt
-    fmt.gsub! '%M', @major
-    fmt.gsub! '%m', @minor
-    fmt.gsub! '%p', @patch
-    fmt.gsub! '%s', @special
+    fmt.gsub! '%M', @major.to_s
+    fmt.gsub! '%m', @minor.to_s
+    fmt.gsub! '%p', @patch.to_s
+    fmt.gsub! '%s', @special.to_s
     fmt
+  end
+
+  def to_s
+    format TAG_FORMAT
   end
 
   def <=> other
