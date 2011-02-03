@@ -1,6 +1,4 @@
 require 'yaml'
-require 'ruby-debug'
-require 'ruby-debug'
 
 class SemVer
 
