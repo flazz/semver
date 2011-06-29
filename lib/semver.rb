@@ -22,7 +22,7 @@ class SemVer
       loop do
         raise "#{dir} is not semantic versioned" if File.dirname(path).match(/(\w:\/|\/)$/i)
         
-        puts "semver: looking at #{dir}"
+        puts "semver: looking at #{path}"
 
         if Dir[path].empty?
           path = File.join path, ".."
