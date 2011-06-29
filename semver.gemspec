@@ -1,3 +1,4 @@
+$:.push File.expand_path("../lib", __FILE__)
 require 'semver'
 
 Gem::Specification.new do |spec|
@@ -9,6 +10,6 @@ Gem::Specification.new do |spec|
   spec.authors = ["Francesco Lazzarino"]
   spec.homepage = 'http://github.com/flazz/semver'
   spec.executables << 'semver'
-  spec.files = [".semver", "gemspec", "README.md"] + Dir["lib/**/*.rb"] + Dir['bin/*']
+  spec.files = [".semver", "semver.gemspec", "README.md"] + Dir["lib/**/*.rb"] + Dir['bin/*']
   spec.has_rdoc = true
 end

@@ -20,10 +20,12 @@ class SemVer
     Dir.chdir dir do
 
       loop do
-        raise "#{dir} is not semantic versioned" if File.dirname(path) == '/'
+        raise "#{dir} is not semantic versioned" if File.dirname(path).match(/(\w:\/|\/)$/i)
+        
+        puts "semver: looking at #{dir}"
 
         if Dir[path].empty?
-          path = File.join '..', path
+          path = File.join path, ".."
           path = File.expand_path path
           next
         else
