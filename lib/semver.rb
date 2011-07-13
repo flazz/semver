@@ -1,4 +1,5 @@
 require 'yaml'
+require 'semver/semvermissingerror'
 
 class SemVer
 
@@ -15,23 +16,16 @@ class SemVer
   def SemVer.find_file dir=nil
     dir ||= Dir.pwd
     raise "#{dir} is not a directory" unless File.directory? dir
-    path = FILE_NAME
+    path = File.join dir, FILE_NAME
 
     Dir.chdir dir do
-
-      loop do
-        raise "#{dir} is not semantic versioned" if File.dirname(path) == '/'
-
-        if Dir[path].empty?
-          path = File.join '..', path
-          path = File.expand_path path
-          next
-        else
-          return path
-        end
-
+      while !File.exists? path do
+        raise SemVerMissingError, "#{dir} is not semantic versioned", caller if File.dirname(path).match(/(\w:\/|\/)$/i)
+        path = File.join File.dirname(path), ".."
+        path = File.expand_path File.join(path, FILE_NAME)
+        puts "semver: looking at #{path}"
       end
-
+      return path
     end
 
   end

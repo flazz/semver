@@ -31,4 +31,6 @@ describe SemVer do
     v.format("v%M.%m.%p%s").should == "v10.33.4beta"
   end
 
+  
+  
 end
