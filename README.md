@@ -1,4 +1,4 @@
-SemVer 3.0.0-rc.1 gem, following semver.org 2.0.0-rc.1
+SemVer2 3.0.x gem, following semver.org 2.0.0-rc.1
 ======
 
 quickstart on the command line
