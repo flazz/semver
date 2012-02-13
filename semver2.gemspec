@@ -3,7 +3,7 @@ require 'semver'
 
 Gem::Specification.new do |spec|
   spec.name = "semver2"
-  spec.version = SemVer.find.format '%M.%m.%p%s'
+  spec.version = SemVer.find.format '%M.%m.%p'
   spec.summary = "Semantic Versioning"
   spec.description = "maintain versions as per http://semver.org"
   spec.email = "henrik@haf.se"
