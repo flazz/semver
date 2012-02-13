@@ -25,12 +25,37 @@ describe SemVer do
   it "should find an ancestral .semver" do
     SemVer.find.should be_a_kind_of(SemVer)
   end
-
+  
+  # Semantic Versioning 2.0.0-rc.1
+  
   it "should format with fields" do
     v = SemVer.new 10, 33, 4, 'beta'
-    v.format("v%M.%m.%p%s").should == "v10.33.4beta"
+    v.format("v%M.%m.%p%s").should == "v10.33.4-beta"
   end
 
+  it "should to_s with dash" do
+    v = SemVer.new 4,5,63, 'alpha.45'
+    v.to_s.should == 'v4.5.63-alpha.45'
+  end
   
+  it "should format with dash" do
+    v = SemVer.new 2,5,11,'a.5'
+    v.format("%M.%m.%p%s").should == '2.5.11-a.5'
+  end
   
+  it "should not format with dash if no special" do
+    v = SemVer.new 2,5,11
+    v.to_s.should == "v2.5.11"
+    v.format("%M.%m.%p%s").should == "2.5.11"
+  end
+  
+  it "should behave like the readme says" do
+    v = SemVer.new(0,0,0)
+    v.major                     # => "0"
+    v.major += 1
+    v.major                     # => "1"
+    v.special = 'alpha.46'
+    v.format "%M.%m.%p%s"       # => "1.1.0-alpha.46"
+    v.to_s                      # => "v1.1.0"
+   end
 end
