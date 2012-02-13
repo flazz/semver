@@ -38,7 +38,7 @@ class SemVer
     patch.kind_of? Integer or raise "invalid patch: #{patch}"
 
     unless special.empty?
-      special =~ /[A-Za-z][0-9A-Za-z-]+/ or raise "invalid special: #{special}"
+      special =~ /[A-Za-z][0-9A-Za-z\.]+/ or raise "invalid special: #{special}"
     end
 
     @major, @minor, @patch, @special = major, minor, patch, special
@@ -68,10 +68,14 @@ class SemVer
   end
 
   def format fmt
-    fmt.gsub! '%M', @major.to_s
-    fmt.gsub! '%m', @minor.to_s
-    fmt.gsub! '%p', @patch.to_s
-    fmt.gsub! '%s', @special.to_s
+    fmt = fmt.gsub '%M', @major.to_s
+    fmt = fmt.gsub '%m', @minor.to_s
+    fmt = fmt.gsub '%p', @patch.to_s
+    if @special.nil? or @special.length == 0 then
+      fmt = fmt.gsub '%s', ''
+    else
+      fmt = fmt.gsub '%s', "-" + @special.to_s
+    end
     fmt
   end
 
