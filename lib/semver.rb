@@ -94,7 +94,7 @@ class SemVer
     return pat unless pat == 0
 
     spe = special <=> other.special
-    return spec unless spe == 0
+    return spe unless spe == 0
 
     0
   end
