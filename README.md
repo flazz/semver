@@ -20,7 +20,7 @@ use it
 quickstart for ruby
 -------------------
 
-    require 'semver'
+    require 'semver2'
     v = SemVer.find
     v.major                     # => "0"
     v.major += 1
