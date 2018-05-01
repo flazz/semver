@@ -52,7 +52,7 @@ begin
   when 'format'
     version = SemVer.find
     format_str = ARGV.shift or raise CommandError, "required: format string"
-    version.format format_str
+    puts version.format format_str
 
   when 'tag'
     version = SemVer.find
